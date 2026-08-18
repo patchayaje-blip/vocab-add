@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vocab Flashcard (TOEIC/THAITEP)</title>
+  <style>
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: #0f172a; color: #f8fafc; max-width: 600px; margin: 0 auto; padding: 20px; }
+    h1 { text-align: center; color: #38bdf8; margin-bottom: 24px; }
+    .card-box { background: #1e293b; padding: 18px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; }
+    input, select, button { width: 100%; padding: 10px; margin: 6px 0; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: #fff; }
+    button { background: #0284c7; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    button:hover { background: #0369a1; }
+    .flashcard { min-height: 140px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; cursor: pointer; border: 2px dashed #38bdf8; }
+    .tag { display: inline-block; padding: 2px 8px; font-size: 12px; border-radius: 4px; background: #334155; margin-bottom: 8px; }
+    .meaning { font-size: 18px; color: #4ade80; display: none; margin-top: 10px; }
+    .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #334155; }
+    .delete-btn { width: auto; padding: 4px 10px; background: #ef4444; font-size: 12px; margin: 0; }
+  </style>
+</head>
+<body>
+
+  <h1>Vocab Vault</h1>
+
+  <!-- Flashcard Area -->
+  <div class="card-box flashcard" id="flashcard" onclick="toggleMeaning()">
+    <span class="tag" id="fcTag">หมวดหมู่</span>
+    <h2 id="fcWord" style="margin:0;">กดปุ่มด้านล่างเพื่อสุ่มศัพท์</h2>
+    <div class="meaning" id="fcMeaning">ความหมาย</div>
+    <div id="fcExample" style="color: #94a3b8; font-size: 13px; margin-top: 5px; display: none;"></div>
+  </div>
+  <button onclick="getRandomWord()">🔀 สุ่มคำศัพท์ถัดไป</button>
+
+  <!-- Add Word Section -->
+  <div class="card-box" style="margin-top: 24px;">
+    <h3>➕ เพิ่มคำศัพท์ใหม่</h3>
+    <input type="text" id="wordInput" placeholder="คำศัพท์ (e.g. Reluctant)">
+    <input type="text" id="meaningInput" placeholder="ความหมาย (e.g. ลังเล, ไม่เต็มใจ)">
+    <input type="text" id="exampleInput" placeholder="ประโยคตัวอย่าง / Context (ไม่ใส่ก็ได้)">
+    <select id="tagInput">
+      <option value="TOEIC">TOEIC</option>
+      <option value="THAITEP">THAITEP</option>
+      <option value="General">ทั่วไป</option>
+    </select>
+    <button style="background: #10b981;" onclick="addWord()">บันทึกคำศัพท์</button>
+  </div>
+
+  <!-- Vocabulary List -->
+  <div class="card-box">
+    <h3>📚 คำศัพท์ทั้งหมด (<span id="totalCount">0</span>)</h3>
+    <div id="vocabList"></div>
+  </div>
+
+  <script>
+    const defaultVocab = [
+      { word: "Substantial", meaning: "มากมาย, สำคัญ", example: "A substantial amount of cash.", tag: "TOEIC" },
+      { word: "Feasible", meaning: "เป็นไปได้, ทำได้จริง", example: "It is not feasible to complete it today.", tag: "THAITEP" }
+    ];
+
+    let words = JSON.parse(localStorage.getItem("vocab_data")) || defaultVocab;
+
+    function saveData() {
+      localStorage.setItem("vocab_data", JSON.stringify(words));
+      renderList();
+    }
+
+    function addWord() {
+      const word = document.getElementById("wordInput").value.trim();
+      const meaning = document.getElementById("meaningInput").value.trim();
+      const example = document.getElementById("exampleInput").value.trim();
+      const tag = document.getElementById("tagInput").value;
+
+      if (!word || !meaning) return alert("กรุณาใส่ทั้งคำศัพท์และความหมาย");
+
+      words.unshift({ word, meaning, example, tag });
+      saveData();
+
+      document.getElementById("wordInput").value = "";
+      document.getElementById("meaningInput").value = "";
+      document.getElementById("exampleInput").value = "";
+    }
+
+    function deleteWord(index) {
+      words.splice(index, 1);
+      saveData();
+    }
+
+    function renderList() {
+      const listEl = document.getElementById("vocabList");
+      document.getElementById("totalCount").innerText = words.length;
+      listEl.innerHTML = "";
+
+      words.forEach((item, index) => {
+        const row = document.createElement("div");
+        row.className = "list-item";
+        row.innerHTML = `
+          <div>
+            <strong>${item.word}</strong> <span style="color:#94a3b8; font-size:12px;">(${item.tag})</span>: ${item.meaning}
+          </div>
+          <button class="delete-btn" onclick="deleteWord(${index})">ลบ</button>
+        `;
+        listEl.appendChild(row);
+      });
+    }
+
+    function getRandomWord() {
+      if (words.length === 0) return alert("ยังไม่มีคำศัพท์ในระบบ");
+      const rand = words[Math.floor(Math.random() * words.length)];
+      document.getElementById("fcTag").innerText = rand.tag;
+      document.getElementById("fcWord").innerText = rand.word;
+      document.getElementById("fcMeaning").innerText = rand.meaning;
+      document.getElementById("fcMeaning").style.display = "none";
+      
+      const exEl = document.getElementById("fcExample");
+      if (rand.example) {
+        exEl.innerText = `Ex: ${rand.example}`;
+      } else {
+        exEl.innerText = "";
+      }
+      exEl.style.display = "none";
+    }
+
+    function toggleMeaning() {
+      const meaning = document.getElementById("fcMeaning");
+      const example = document.getElementById("fcExample");
+      const isHidden = meaning.style.display === "none";
+      meaning.style.display = isHidden ? "block" : "none";
+      if (example.innerText) example.style.display = isHidden ? "block" : "none";
+    }
+
+    renderList();
+    getRandomWord();
+  </script>
+</body>
+</html>
