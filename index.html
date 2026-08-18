@@ -2,25 +2,20 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <!-- ล็อก viewport ป้องกัน zoom ล้นบนมือถือ -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Vocab Flashcard (TOEIC/THAITEP)</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    
-    /* ล็อกความสูงหน้าจอ 100vh ไม่ให้มี scrollbar รวม */
     body {
       background-color: #0f172a;
       color: #f8fafc;
       height: 100vh;
-      height: 100dvh; /* Dynamic viewport สำหรับ mobile browser */
+      height: 100dvh;
       display: flex;
       justify-content: center;
       align-items: center;
       overflow: hidden;
     }
-
-    /* Container หลัก: บนคอมกว้าง 480px บนมือถือเต็มจอ */
     .app-container {
       width: 100%;
       max-width: 480px;
@@ -29,122 +24,58 @@
       flex-direction: column;
       background: #1e293b;
       padding: 16px;
-      border-radius: 0;
     }
-
     @media (min-width: 640px) {
       .app-container {
         height: 90vh;
-        max-height: 800px;
+        max-height: 820px;
         border-radius: 16px;
         border: 1px solid #334155;
         box-shadow: 0 10px 25px rgba(0,0,0,0.5);
       }
     }
-
-    header {
-      text-align: center;
-      padding-bottom: 12px;
-      border-bottom: 1px solid #334155;
-    }
+    header { text-align: center; padding-bottom: 12px; border-bottom: 1px solid #334155; }
     header h1 { font-size: 1.25rem; color: #38bdf8; }
 
-    /* Navigation Bar */
-    .nav-tabs {
-      display: flex;
-      gap: 8px;
-      margin: 12px 0;
-    }
+    .nav-tabs { display: flex; gap: 8px; margin: 12px 0; }
     .nav-btn {
-      flex: 1;
-      padding: 8px;
-      background: #0f172a;
-      border: 1px solid #334155;
-      color: #94a3b8;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 14px;
+      flex: 1; padding: 8px; background: #0f172a; border: 1px solid #334155;
+      color: #94a3b8; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;
     }
-    .nav-btn.active {
-      background: #0284c7;
-      color: #fff;
-      border-color: #0284c7;
-    }
+    .nav-btn.active { background: #0284c7; color: #fff; border-color: #0284c7; }
 
-    /* Content Area */
-    .tab-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
+    .tab-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
     .view { display: none; height: 100%; flex-direction: column; }
     .view.active { display: flex; }
 
-    /* Flashcard View */
+    /* Flashcard */
     .flashcard {
-      flex: 1;
-      background: #0f172a;
-      border: 2px dashed #38bdf8;
-      border-radius: 12px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-      text-align: center;
-      cursor: pointer;
-      margin-bottom: 12px;
-      user-select: none;
+      flex: 1; background: #0f172a; border: 2px dashed #38bdf8; border-radius: 12px;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 20px; text-align: center; cursor: pointer; margin-bottom: 12px; user-select: none;
     }
-    .tag { font-size: 12px; padding: 2px 8px; border-radius: 4px; background: #334155; margin-bottom: 8px; }
+    .tag-group { display: flex; gap: 6px; margin-bottom: 8px; }
+    .tag { font-size: 12px; padding: 2px 8px; border-radius: 4px; background: #334155; color: #94a3b8; }
+    .tag-pos { background: #0369a1; color: #e0f2fe; }
     .meaning { font-size: 1.2rem; color: #4ade80; display: none; margin-top: 12px; }
     .example { font-size: 0.85rem; color: #94a3b8; margin-top: 8px; display: none; }
 
     /* Form & Input */
+    .input-group { position: relative; width: 100%; }
     input, select, .action-btn {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 8px;
-      border-radius: 8px;
-      border: 1px solid #475569;
-      background: #0f172a;
-      color: #fff;
-      font-size: 14px;
+      width: 100%; padding: 10px; margin-bottom: 8px; border-radius: 8px;
+      border: 1px solid #475569; background: #0f172a; color: #fff; font-size: 14px;
     }
-    .action-btn {
-      background: #0284c7;
-      border: none;
-      font-weight: 600;
-      cursor: pointer;
-    }
+    .api-status { font-size: 11px; color: #38bdf8; margin-top: -4px; margin-bottom: 6px; display: block; min-height: 14px; }
+    .action-btn { background: #0284c7; border: none; font-weight: 600; cursor: pointer; }
 
-    /* List View (Scroll เฉพาะส่วนนี้) */
-    .vocab-list-container {
-      flex: 1;
-      overflow-y: auto;
-      padding-right: 4px;
-    }
+    /* List View */
+    .vocab-list-container { flex: 1; overflow-y: auto; padding-right: 4px; }
     .list-item {
-      background: #0f172a;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border: 1px solid #334155;
+      background: #0f172a; padding: 10px; border-radius: 8px; margin-bottom: 8px;
+      display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155;
     }
-    .delete-btn {
-      background: #ef4444;
-      border: none;
-      color: #fff;
-      padding: 4px 8px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-    }
+    .delete-btn { background: #ef4444; border: none; color: #fff; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; }
   </style>
 </head>
 <body>
@@ -154,7 +85,6 @@
       <h1>Vocab Vault (TOEIC / THAITEP)</h1>
     </header>
 
-    <!-- แท็บสลับหน้าจอเพื่อไม่ให้ล้น -->
     <div class="nav-tabs">
       <button class="nav-btn active" onclick="switchTab('review')">🔀 ท่องศัพท์</button>
       <button class="nav-btn" onclick="switchTab('add')">➕ เพิ่มคำศัพท์</button>
@@ -165,7 +95,10 @@
       <!-- 1. Flashcard View -->
       <div class="view active" id="view-review">
         <div class="flashcard" id="flashcard" onclick="toggleMeaning()">
-          <span class="tag" id="fcTag">หมวดหมู่</span>
+          <div class="tag-group">
+            <span class="tag" id="fcTag">หมวดหมู่</span>
+            <span class="tag tag-pos" id="fcPos">POS</span>
+          </div>
           <h2 id="fcWord" style="font-size: 1.6rem;">กดปุ่มเพื่อสุ่ม</h2>
           <div class="meaning" id="fcMeaning">ความหมาย</div>
           <div class="example" id="fcExample"></div>
@@ -175,14 +108,21 @@
 
       <!-- 2. Add Word View -->
       <div class="view" id="view-add">
-        <input type="text" id="wordInput" placeholder="คำศัพท์ (e.g. Substantial)">
-        <input type="text" id="meaningInput" placeholder="ความหมาย (e.g. มากมาย, สำคัญ)">
-        <input type="text" id="exampleInput" placeholder="ตัวอย่างประโยค (ถ้ามี)">
+        <div class="input-group">
+          <input type="text" id="wordInput" placeholder="พิมพ์คำศัพท์ภาษาอังกฤษ (e.g. accommodate)" onblur="fetchWordInfo()" onkeydown="if(event.key==='Enter') fetchWordInfo()">
+          <span class="api-status" id="apiStatus"></span>
+        </div>
+        
+        <input type="text" id="posInput" placeholder="ประเภทคำ (e.g. v., n., adj.) — ดึงให้อัตโนมัติ">
+        <input type="text" id="meaningInput" placeholder="ความหมายภาษาไทย (e.g. รองรับ, อำนวยความสะดวก)">
+        <input type="text" id="exampleInput" placeholder="ประโยคตัวอย่าง (ดึงให้อัตโนมัติถ้ามี)">
+        
         <select id="tagInput">
           <option value="TOEIC">TOEIC</option>
           <option value="THAITEP">THAITEP</option>
           <option value="General">ทั่วไป</option>
         </select>
+        
         <button class="action-btn" style="background: #10b981;" onclick="addWord()">บันทึกคำศัพท์</button>
       </div>
 
@@ -195,8 +135,8 @@
 
   <script>
     const defaultVocab = [
-      { word: "Substantial", meaning: "มากมาย, สำคัญ", example: "A substantial amount of cash.", tag: "TOEIC" },
-      { word: "Feasible", meaning: "เป็นไปได้, ทำได้จริง", example: "It is feasible to complete it today.", tag: "THAITEP" }
+      { word: "Substantial", pos: "adj.", meaning: "มากมาย, สำคัญ", example: "A substantial amount of cash.", tag: "TOEIC" },
+      { word: "Feasible", pos: "adj.", meaning: "เป็นไปได้, ทำได้จริง", example: "It is feasible to complete it today.", tag: "THAITEP" }
     ];
 
     let words = JSON.parse(localStorage.getItem("vocab_data")) || defaultVocab;
@@ -214,20 +154,69 @@
       document.getElementById(`view-${tab}`).classList.add("active");
     }
 
+    // Auto-fetch Part of Speech & Example from Dictionary API
+    async function fetchWordInfo() {
+      const word = document.getElementById("wordInput").value.trim();
+      const statusEl = document.getElementById("apiStatus");
+      if (!word) return;
+
+      statusEl.innerText = "🔍 กำลังค้นหาประเภทคำ...";
+      
+      try {
+        const res = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        
+        if (data && data[0] && data[0].meanings) {
+          const meanings = data[0].meanings;
+          
+          // ดึงประเภทคำทั้งหมด เช่น v., n., adj.
+          const posList = meanings.map(m => {
+            const map = { noun: "n.", verb: "v.", adjective: "adj.", adverb: "adv.", preposition: "prep.", conjunction: "conj." };
+            return map[m.partOfSpeech] || m.partOfSpeech;
+          });
+          const uniquePos = [...new Set(posList)].join(", ");
+          document.getElementById("posInput").value = uniquePos;
+
+          // หาตัวอย่างประโยคแรกที่พบ
+          let foundExample = "";
+          for (let m of meanings) {
+            for (let d of m.definitions) {
+              if (d.example) {
+                foundExample = d.example;
+                break;
+              }
+            }
+            if (foundExample) break;
+          }
+          if (foundExample && !document.getElementById("exampleInput").value) {
+            document.getElementById("exampleInput").value = foundExample;
+          }
+
+          statusEl.innerText = "✓ ดึงประเภทคำเรียบร้อย";
+        }
+      } catch (err) {
+        statusEl.innerText = "⚠️ ไม่พบในพจนานุกรม (สามารถพิมพ์ระบุเองได้)";
+      }
+    }
+
     function addWord() {
       const word = document.getElementById("wordInput").value.trim();
+      const pos = document.getElementById("posInput").value.trim() || "-";
       const meaning = document.getElementById("meaningInput").value.trim();
       const example = document.getElementById("exampleInput").value.trim();
       const tag = document.getElementById("tagInput").value;
 
       if (!word || !meaning) return alert("กรุณาใส่คำศัพท์และความหมาย");
 
-      words.unshift({ word, meaning, example, tag });
+      words.unshift({ word, pos, meaning, example, tag });
       saveData();
 
       document.getElementById("wordInput").value = "";
+      document.getElementById("posInput").value = "";
       document.getElementById("meaningInput").value = "";
       document.getElementById("exampleInput").value = "";
+      document.getElementById("apiStatus").innerText = "";
       switchTab("review");
       getRandomWord();
     }
@@ -247,7 +236,9 @@
         row.className = "list-item";
         row.innerHTML = `
           <div>
-            <strong>${item.word}</strong> <span style="color:#94a3b8; font-size:11px;">(${item.tag})</span><br>
+            <strong>${item.word}</strong> 
+            <span style="color:#38bdf8; font-size:11px;">[${item.pos || '-'}]</span>
+            <span style="color:#94a3b8; font-size:11px;">(${item.tag})</span><br>
             <span style="color:#4ade80; font-size:13px;">${item.meaning}</span>
           </div>
           <button class="delete-btn" onclick="deleteWord(${index})">ลบ</button>
@@ -260,6 +251,7 @@
       if (words.length === 0) return;
       const rand = words[Math.floor(Math.random() * words.length)];
       document.getElementById("fcTag").innerText = rand.tag;
+      document.getElementById("fcPos").innerText = rand.pos || "-";
       document.getElementById("fcWord").innerText = rand.word;
       document.getElementById("fcMeaning").innerText = rand.meaning;
       document.getElementById("fcMeaning").style.display = "none";
